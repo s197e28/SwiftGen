@@ -28,27 +28,38 @@ extension Strings {
       
       do {
         return try file.document.strings.compactMap { key, entry -> Strings.Entry? in
-          var entry = Strings.Entry(
+          guard let localization = entry.localizations?[sourceLanguage] else {
+            return nil
+          }
+          var stringEntry = Strings.Entry(
             key: key,
-            translation: translation(from: entry.localizations, sourceLanguage: sourceLanguage) ?? key,
-            types: try Strings.PlaceholderType.placeholderTypes(
-              fromFormat: key
-            ),
+            translation: localization.stringUnit?.value ?? key,
+            types: try placeholderFormat(from: localization, key: key),
             keyStructureSeparator: options[Option.separator]
           )
-          entry.comment = entry.comment
-          return entry
+          stringEntry.comment = entry.comment
+          return stringEntry
         }
       } catch {
         throw error
       }
     }
     
-    private func translation(from localizations: [String: Strings.Localization]?, sourceLanguage: String) -> String? {
-      guard let localization = localizations?[sourceLanguage] else {
-        return nil
+    private func placeholderFormat(from localization: Strings.Localization, key: String) throws -> [Strings.PlaceholderType] {
+      let keyValue = localization.stringUnit?.value ?? key
+      let placeholderTypes = try Strings.PlaceholderType.placeholderTypes(
+        fromFormat: keyValue
+      )
+      if !placeholderTypes.isEmpty {
+        return placeholderTypes
+      } else {
+        let plurals = localization.variations?.plural?.all.map(\.stringUnit.value) ?? []
+        return try plurals.map {
+          try Strings.PlaceholderType.placeholderTypes(
+            fromFormat: $0
+          )
+        }.first(where: { !$0.isEmpty }) ?? []
       }
-      return localization.stringUnit?.value
     }
   }
 }

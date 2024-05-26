@@ -53,6 +53,17 @@ extension Strings {
     let few: Variation?
     let many: Variation?
     let other: Variation
+    
+    var all: [Variation] {
+      [
+        zero,
+        one,
+        two,
+        few,
+        many,
+        other
+      ].compactMap { $0 }
+    }
   }
   
   struct Variation: Decodable {
