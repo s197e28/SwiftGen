@@ -10,25 +10,25 @@ import PathKit
 extension Strings {
   final class StringsCatalogFileParser: StringsFileTypeParser {
     private let options: ParserOptionValues
-    
+
     init(options: ParserOptionValues) {
       self.options = options
     }
-    
+
     static let extensions = ["xcstrings"]
-    
+
     func parseFile(at path: Path) throws -> [Strings.Entry] {
       let file = try File(path: path)
       let entries = try parseFile(file)
       return entries
     }
-    
-    public func parseFile(_ file: File) throws -> [Strings.Entry] {
+
+    func parseFile(_ file: File) throws -> [Strings.Entry] {
       let sourceLanguage = file.document.sourceLanguage
-      
+
       do {
         return try file.document.strings.compactMap { key, entry -> Strings.Entry? in
-          guard let localization = entry.localizations?[sourceLanguage] else {
+          guard let localization = entry.localizations[sourceLanguage] else {
             return nil
           }
           var stringEntry = Strings.Entry(
@@ -44,8 +44,11 @@ extension Strings {
         throw error
       }
     }
-    
-    private func placeholderFormat(from localization: Strings.Localization, key: String) throws -> [Strings.PlaceholderType] {
+
+    private func placeholderFormat(
+      from localization: Strings.Localization,
+      key: String
+    ) throws -> [Strings.PlaceholderType] {
       let keyValue = localization.stringUnit?.value ?? key
       let placeholderTypes = try Strings.PlaceholderType.placeholderTypes(
         fromFormat: keyValue
@@ -53,12 +56,11 @@ extension Strings {
       if !placeholderTypes.isEmpty {
         return placeholderTypes
       } else {
-        let plurals = localization.variations?.plural?.all.map(\.stringUnit.value) ?? []
-        return try plurals.map {
-          try Strings.PlaceholderType.placeholderTypes(
-            fromFormat: $0
-          )
-        }.first(where: { !$0.isEmpty }) ?? []
+        let plurals = localization.variations?.plural?.all.map { $0.stringUnit.value } ?? []
+        let types = try plurals.map { format in try Strings.PlaceholderType.placeholderTypes(fromFormat: format) }
+        return types.first { types in
+          !types.isEmpty
+        } ?? []
       }
     }
   }
