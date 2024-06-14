@@ -33,7 +33,7 @@ extension Strings {
           }
           var stringEntry = Strings.Entry(
             key: key,
-            translation: localization.stringUnit?.value ?? key,
+            translation: translation(from: localization, key: key),
             types: try placeholderFormat(from: localization, key: key),
             keyStructureSeparator: options[Option.separator]
           )
@@ -43,6 +43,16 @@ extension Strings {
       } catch {
         throw error
       }
+    }
+
+    private func translation(
+      from localization: Strings.Localization,
+      key: String
+    ) -> String {
+      if localization.variations?.plural != nil {
+        return "Plural format key: \(key)"
+      }
+      return localization.stringUnit?.value ?? "Key: \(key)"
     }
 
     private func placeholderFormat(
