@@ -120,6 +120,6 @@ private final class BundleToken {
 // swiftlint:enable convenience_type
 {% endif %}
 {% else %}
-// No string found
+// No strings catalog found
 {% endif %}
 // swiftlint:enable all
