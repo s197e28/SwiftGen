@@ -14,6 +14,8 @@ internal enum L10n {
   internal static let alertMessage = L10n.tr("Localizable", "alert__message")
   /// Title for an alert 1️⃣
   internal static let alertTitle = L10n.tr("Localizable", "alert__title")
+  /// greeting
+  internal static let greeting = L10n.tr("Localizable", "greeting")
   /// value1  value
   internal static let key1 = L10n.tr("Localizable", "key1")
   /// These are %3$@'s %1$d %2$@.
